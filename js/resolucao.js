@@ -1,33 +1,84 @@
+
+const fs = require('fs');
 let brokenDatabase = require('./broken-database.json');
+const characterFixer = { 'æ' : 'a', '¢' : 'c', 'ø' : 'o', 'ß' : 'b' };
 
-function fixProductName(database) {
+let fixedDatabase = brokenDatabase.map((product) => {
+    
+    fixProductName(product);
+    fixPriceType(product);
+    fixProductQuantity(product);
 
-    let characterFixer = { 'æ' : 'a', '¢' : 'c', 'ø' : 'o', 'ß' : 'b' }
+    return product;
 
-    database.map(product => {
+})
 
-        let string = product.name.replace(/[æ|¢|ø|ß]/g, charactersToReplace => (characterFixer)[charactersToReplace])
-        console.log(string)
-        
-    })
+writeFixedDatabaseFile(fixedDatabase);
+
+function fixProductName(product) {
+
+    product.name = product.name.replace(/[æ|¢|ø|ß]/g, charactersToReplace => (characterFixer)[charactersToReplace]);
+    
+}
+
+function fixPriceType(product) {
+
+    if(typeof(product.price) === 'string') {
+
+        product.price = parseInt(product.price);
+
+    }
 
 }
 
-function fixPriceType(database) {
+function fixProductQuantity(product) {
 
-    database.map(product => {
+    if(!product.quantity) {
 
-        if(typeof(product.price) === 'string') {
+        product.quantity = 0;
 
-            product.price = parseInt(product.price)
+    }
+
+}
+
+function writeFixedDatabaseFile(database) {
+
+    fs.writeFile("./saida.json", JSON.stringify(database, null, 4), (err) => {
+
+        if(err) {
+
+            console.log("Ocorreu um erro na escrita do arquivo!");
 
         }
 
-        console.log(typeof(product.price));
-
     })
 
 }
 
-// fixProductName(brokenDatabase);
-fixPriceType(brokenDatabase);
+function printProductsInOrder(database) {
+
+    database.sort((a, b) => {
+        
+        return((a.category > b.category) ? 1 : (a.category < b.category) ? -1 : 0)
+
+    }).sort((a, b) => {
+
+        if(a.category === b.category) {
+
+            return((a.id > b.id) ? 1 : (a.id < b.id) ? -1 : 0)
+            
+        }
+
+    })
+
+    console.log(database)
+
+}
+
+function totalStockValueByCategory(database) {
+
+
+}
+
+printProductsInOrder(fixedDatabase)
+totalStockValueByCategory(fixedDatabase)
