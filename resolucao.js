@@ -1,7 +1,10 @@
 
 const fs = require('fs');
-let brokenDatabase = require('./broken-database.json');
+const brokenDatabasePath = './broken-database.json';
+const outputFilePath = './saida.json';
 const characterFixer = { 'æ': 'a', '¢': 'c', 'ø': 'o', 'ß': 'b' };
+
+const brokenDatabase = readDatabaseFile(brokenDatabasePath);
 
 let fixedDatabase = brokenDatabase.map(product => {
 
@@ -14,13 +17,33 @@ let fixedDatabase = brokenDatabase.map(product => {
 })
 
 writeFixedDatabaseFile(fixedDatabase);
+printProductsInOrder(fixedDatabase);
+totalStockValue(fixedDatabase);
 
+function readDatabaseFile(database) {
+
+    try {
+
+        return JSON.parse(fs.readFileSync(database));
+
+    } catch(err) {
+
+        console.log("Ocorreu um erro na leitura do arquivo!" + err);
+
+    }
+
+}
+
+
+// função para realizar a correção dos nomes dos produtos
 function fixProductName(product) {
 
+    //trecho adptado de https://thispointer.com/javascript-replace-multiple-characters-in-string/
     product.name = product.name.replace(/[æ|¢|ø|ß]/g, charactersToReplace => (characterFixer)[charactersToReplace]);
 
 }
 
+//função que transforma os tipos dos preços dos produtos que estão como "string" em "number"
 function fixPriceType(product) {
 
     if(typeof(product.price) === 'string') {
@@ -31,6 +54,7 @@ function fixPriceType(product) {
 
 }
 
+//função que adiciona o atributo "quantity" aos produtos que não possuem 
 function fixProductQuantity(product) {
 
     if(!product.quantity) {
@@ -41,13 +65,14 @@ function fixProductQuantity(product) {
 
 }
 
+//função para escrita do arquivo de saida
 function writeFixedDatabaseFile(database) {
 
-    fs.writeFile("./saida.json", JSON.stringify(database, null, 4), (err) => {
+        fs.writeFile(outputFilePath, JSON.stringify(database, null, 4), (err) => {
 
         if(err) {
 
-            console.log("Ocorreu um erro na escrita do arquivo!");
+            console.log("Ocorreu um erro na escrita do arquivo!" + err);
 
         }
 
@@ -55,9 +80,7 @@ function writeFixedDatabaseFile(database) {
 
 }
 
-printProductsInOrder(fixedDatabase);
-totalStockValueByCategory(fixedDatabase);
-
+//função para a ordenação dos produtos por categoria e id em ordem crescente
 function printProductsInOrder(database) {
 
     database.sort((a, b) => {
@@ -78,7 +101,8 @@ function printProductsInOrder(database) {
 
 }
 
-function totalStockValueByCategory(database) {
+//função para calcular o estoque total dos produtos de uma mesma categoria
+function totalStockValue(database) {
 
     let totalCategory = {}
 
