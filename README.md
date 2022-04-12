@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./rockybg.png" width="140px" />
+  <img src="./rockybg.png" width="280px" />
 </p>
 
 <h1 align="center">Teste Prático - Rocky.Monks</h1>
